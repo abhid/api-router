@@ -10,6 +10,7 @@
 
 var http = require('http');
 var fs = require('fs');
+var request = require('request');
  
 http.createServer(function (req, res) {
 		if (req.url == "/") {
@@ -49,14 +50,11 @@ var proxyRoute = function(req, res) {
 						var param_regex = new RegExp(params[i], "g")
 						out_url = out_url.replace(param_regex, matches[i]);
 					}
-					console.log("Incoming: " + req.url);
+					console.log(req.method + " : " + req.url);
 					console.log("Params: " + params);
 					console.log("Matches: " + matches);
 					console.log("Outgoing: " + out_url);
-
-					http.get(out_url, function onResponse(response) {
-					  response.pipe(res);
-					});
+					req.pipe(request(out_url)).pipe(res);
 					found = true;
 					break;
 				}
