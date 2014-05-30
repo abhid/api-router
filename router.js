@@ -16,6 +16,9 @@ http.createServer(function (req, res) {
 		if (req.url == "/") {
 			sendHomePage(req, res);
 		}
+		else if (req.url == "/docs") {
+			sendDocsPage(req, res);
+		}
 		else {
 	    proxyRoute(req, res);
 		}
@@ -62,6 +65,20 @@ var proxyRoute = function(req, res) {
 		}
 		if(!found) {
 			res.end("Route not found. Please add it in the routes file.\n");
+		}
+	});
+};
+
+var sendDocsPage = function(req, res) {
+	fs.readFile("routes", 'utf8', function(err, data) {
+		if (err)
+		{
+			res.end("Error opening routes file...");
+		}
+		else
+		{
+			res.write("Supported routes\n");
+			res.end(data);
 		}
 	});
 }
