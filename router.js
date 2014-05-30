@@ -3,82 +3,40 @@
 ##  Node API Router
 ##		by Abhi Devireddy
 ##
-##	Usage: 	Routes are specified in the routes file.
+##	Usage: 	Add your routes to the file and test your endpoint.
 ## 					Variables are enclosed in { }
 ##
 */
 
-var http = require('http');
-var fs = require('fs');
-var request = require('request');
+var Hapi = require('hapi');
  
-http.createServer(function (req, res) {
-		if (req.url == "/") {
-			sendHomePage(req, res);
-		}
-		else if (req.url == "/docs") {
-			sendDocsPage(req, res);
-		}
-		else {
-	    proxyRoute(req, res);
-		}
-}).listen(process.env.PORT);
+var server = new Hapi.Server('0.0.0.0', process.env.PORT || 8080);
 
-var sendHomePage = function(req, res) {
-	res.writeHead(200, {'Content-Type': 'text/plain'});
-	res.end("Done");
-};
 
-var proxyRoute = function(req, res) {
-	fs.readFile("routes", 'utf8', function(err, data) {
-		if (err)
-		{
-			res.end("Error opening routes file...");
-		}
-		else
-		{
-			var routes = data.split("\n");
-			var found = false;
-			for(var i = 0; i < routes.length; i++) {
-				if (routes[i][0] == "#") continue;
-				var route = routes[i].split(",");
-				if (route[1] == null) break;
-				var route_regex = new RegExp(route[0].replace(/{(.*?)}/g, "(.*)"));
-				var out_url = route[1].trim();
-				var params = route[0].match(/{(.*?)}/g);
-				var matches = req.url.match(route_regex);
-				if (matches) matches = matches.slice(1);
-				if (out_url && matches) {
-					for(var i = 0; i < params.length; i++) {
-						var param_regex = new RegExp(params[i], "g")
-						out_url = out_url.replace(param_regex, matches[i]);
-					}
-					console.log(req.method + " : " + req.url);
-					console.log("Params: " + params);
-					console.log("Matches: " + matches);
-					console.log("Outgoing: " + out_url);
-					req.pipe(request(out_url)).pipe(res);
-					found = true;
-					break;
-				}
-			}
-		}
-		if(!found) {
-			res.end("Route not found. Please add it in the routes file.\n");
-		}
-	});
-};
-
-var sendDocsPage = function(req, res) {
-	fs.readFile("routes", 'utf8', function(err, data) {
-		if (err)
-		{
-			res.end("Error opening routes file...");
-		}
-		else
-		{
-			res.write("Supported routes\n");
-			res.end(data);
-		}
-	});
+// Root Route
+var root = function(request, reply) {
+	reply("OK");
 }
+server.route({method: '*', path: '/', handler: root});
+
+// Route for the Reddit API
+server.route({
+  method: '*',
+  path: '/reddit/{apicall*}',
+  handler: {
+    proxy: {
+      passThrough: true,
+      redirects: 5,
+      mapUri:  function (request, callback) {
+        url = "http://api.reddit.com/" + request.params.apicall;
+        callback(null,url);
+      }
+    }
+  }
+});
+
+
+// Start the server
+server.start(function() {
+  console.log(server.info.uri);
+});

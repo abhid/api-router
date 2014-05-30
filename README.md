@@ -1,8 +1,8 @@
-node-api-router
-===============
+api-router
+==========
 
 
 ##### Usage:
-Routes are specified in the routes file.
+Router based on HAPI. Specify the endpoints and the URI that you want the endpoints mapped to.
 
-Variables are enclosed in { } in the url and the mask is applied to the destination url.
+Variables are enclosed in { } in the routes.

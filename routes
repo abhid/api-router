@@ -1,2 +1,0 @@
-# Wildcard matching on anything reddit. Points to api.reddit.com
-/reddit{params}, http://api.reddit.com{params}
