@@ -1,15 +1,14 @@
 /*
 ##
 ##  Node API Router
-##		by Abhi Devireddy
+##    by Abhi Devireddy
 ##
-##	Usage: 	Add your routes to the file and test your endpoint.
-## 					Variables are enclosed in { }
+##  Usage:  Add your routes to the file and test your endpoint.
+##          Variables are enclosed in { }
 ##
 */
 
 var Hapi = require('hapi');
- 
 var server = new Hapi.Server('0.0.0.0', process.env.PORT || 8080);
 
 // Default Routes
@@ -26,7 +25,8 @@ server.route({
       passThrough: true,
       redirects: 5,
       mapUri:  function (request, callback) {
-        url = "http://api.reddit.com/" + (request.params['apicall'] || '');
+        query = request.url.search ? request.url.search : '';
+        url = "http://api.reddit.com/" + (request.params['apicall'] || '') + query;
         callback(null,url);
       }
     }
